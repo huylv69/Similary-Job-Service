@@ -1,66 +1,45 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from flask import json
-from pyvi import ViTokenizer, ViPosTagger
+from init_pro import *
 
 app = Flask(__name__)
 
 
-def jaccard_similarity(list1, list2):
-    intersection = len(list(set(list1).intersection(list2)))
-    print(list(set(list1).intersection(list2)))
-    union = (len(list1) + len(list2)) - intersection
-    return float(intersection / union)
-
-
-def normalize_text(string):
-    string = string.lower()
-    return string.strip()
-
-
-def tokenize(string):
-    text_token = ViTokenizer.tokenize(string).split()
-    return text_token
-
-
 @app.route('/')
 def hello_world():
-    title = tokenize(normalize_text(u"Trường đại học bách khoa hà nội"))
-
-    title2 = tokenize(normalize_text(u"Trường đại học bách khoa Hà nội"))
-    print(jaccard_similarity(title, title2))
-
-    return 'Job Recommend System!'
+    return 'Job Recommend System! Ahihii'
 
 
-@app.route('/messages', methods=['POST'])
-def api_message():
-    if request.headers['Content-Type'] == 'text/plain':
-        return "Text Message: " + request.data
-
-    elif request.headers['Content-Type'] == 'application/json':
-        return "JSON Message: " + json.dumps(request.json)
-
-    elif request.headers['Content-Type'] == 'application/octet-stream':
-        f = open('./binary', 'wb')
-        f.write(request.data)
-        f.close()
-        return "Binary message written!"
-    else:
-        return "415 Unsupported Media Type ;)"
+# --- GET ---
+@app.route('/job-candidate/<idJob>', methods=['GET'])
+def getListCandidate(idJob):
+    pprint(idJob)
+    listCandidate = selectForJob(idJob)
+    return jsonify(listCandidate), 200
 
 
-@app.route('/hello', methods=['GET'])
-def api_hello():
-    data = {
-        'hello': 'world',
-        'number': 3
-    }
-    js = json.dumps(data)
+@app.route('/candidate-job/<idCandidate>', methods=['GET'])
+def getListJob(idCandidate):
+    pprint(idCandidate)
+    listJob = selectForCandidate(idCandidate)
+    return jsonify(listJob), 200
 
-    resp = Response(js, status=200, mimetype='application/json')
-    resp.headers['Link'] = 'http://luisrei.com'
 
-    return resp
+# --- COMPUTE ---
+@app.route('/job-vs-candidate', methods=['POST'])
+def computeJob():
+    if request.method == 'POST':
+        job = request.json
+        jobVsCandidate(job)
+        return jsonify({"Success": True}), 200
+
+
+@app.route('/candidate-vs-job', methods=['POST'])
+def computeCandidate():
+    if request.method == 'POST':
+        candidate = request.json
+        candidateVsPost(candidate)
+        return jsonify({"Success": True}), 200
 
 
 if __name__ == '__main__':
