@@ -106,14 +106,7 @@ def compare_career(career1, career2):
         return 0
 
 
-# diploma
-# -- 'Trên đại học'
-# -- 'Đại học'
-# -- 'Cao đẳng'
-# -- 'Trung cấp'
-# -- 'Trung học'
-# -- 'Chứng chỉ nghề'
-# -- 'Không yêu cầu bằng cấp'
+
 
 def compare_diploma(dip1, dip2):
     if compareStr(dip1, "Không yêu cầu bằng cấp") or compareStr(dip2, "Không yêu cầu bằng Cấp") or compareStr(dip1,
