@@ -2,8 +2,17 @@ from flask import Flask, request, Response, jsonify
 from flask import json
 from init_pro import *
 
-app = Flask(__name__)
+# from flaskext.mysql import MySQL
 
+from database import mysql
+
+app = Flask(__name__)
+app.config['MYSQL_DATABASE_USER'] = 'root'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Vanhuy@123'
+app.config['MYSQL_DATABASE_DB'] = 'linktest'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+
+mysql.init_app(app)
 
 @app.route('/')
 def hello_world():
@@ -11,14 +20,14 @@ def hello_world():
 
 
 # --- GET ---
-@app.route('/job-candidate/<idJob>', methods=['GET'])
+@app.route('/job-to-candidate/<idJob>', methods=['GET'])
 def getListCandidate(idJob):
     pprint(idJob)
     listCandidate = selectForJob(idJob)
     return jsonify(listCandidate), 200
 
 
-@app.route('/candidate-job/<idCandidate>', methods=['GET'])
+@app.route('/candidate-to-job/<idCandidate>', methods=['GET'])
 def getListJob(idCandidate):
     pprint(idCandidate)
     listJob = selectForCandidate(idCandidate)

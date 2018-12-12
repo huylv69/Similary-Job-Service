@@ -2,14 +2,19 @@ from pyvi import ViTokenizer, ViPosTagger
 from pprint import pprint
 import math
 import re
-import mysql.connector
+import json
 
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="Vanhuy@123",
-    database="linktest"
-)
+# import mysql.connector
+from database import mysql
+
+# conn = mysql.connect()
+
+# mydb = mysql.connector.connect(
+#     host="localhost",
+#     user="root",
+#     passwd="Vanhuy@123",
+#     database="linktest"
+# )
 
 
 # salary, experience,diploma,career,address, positon,category,sex, title
@@ -64,7 +69,6 @@ def compare_experience(ex1, ex2):
 
 
 # Salary
-# text = ['26,000,000 VND', 'Trên 50 triệu', '15 – 20 triệu']
 def get_salary(text):
     salary = 0
     # a = re.findall(u'(^|\s)(\d*([,.]?\d+)+)', text)
@@ -187,10 +191,12 @@ def score(title, career, salary, sex, category, position, diploma, experience, a
     return title * 0.05 + career * 0.15 + salary * 0.2 + sex * 0.1 + category * 0.1 + position * 0.1 + diploma * 0.05 + experience * 0.15 + address * 0.1
 
 
-# ----SERVICE----
+# ----SERVICE INSERT----
 def jobVsCandidate(job):
     pprint(job)
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     mycursor.execute(
         "SELECT title, career, salary, sex, category, position, diploma, experience, address, idstudent FROM student")
     candidates = mycursor.fetchall()
@@ -210,8 +216,8 @@ def jobVsCandidate(job):
                 try:
                     sql = "INSERT INTO job_candidate (idjob, idcandidate, score) VALUES (%s, %s,%s) ON DUPLICATE KEY UPDATE score = VALUES(score);"
                     mycursor.execute(sql, (job["idpost"], candidate[9], score_val))
-                    mydb.commit()
-
+                    # mydb.commit()
+                    conn.commit()
                 except Exception as e:
                     print('Statement:', e.args)
                     print('Type:', type(e))
@@ -225,7 +231,9 @@ def jobVsCandidate(job):
 
 def candidateVsPost(candidate):
     pprint(candidate)
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     mycursor.execute(
         "SELECT title, idcareer, salary, sex, category, position, diploma, experience, address, idpost FROM post")
     posts = mycursor.fetchall()
@@ -245,8 +253,8 @@ def candidateVsPost(candidate):
                 try:
                     sql = "INSERT INTO job_candidate (idjob, idcandidate, score) VALUES (%s, %s,%s) ON DUPLICATE KEY UPDATE score = VALUES(score);"
                     mycursor.execute(sql, (job[9], candidate["idstudent"], score_val))
-                    mydb.commit()
-
+                    # mydb.commit()
+                    conn.commit()
                 except Exception as e:
                     print('Statement:', e.args)
                     print('Type:', type(e))
@@ -259,7 +267,9 @@ def candidateVsPost(candidate):
 
 
 def selectForJob(idJob):
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     sql = "SELECT idcandidate FROM job_candidate where idjob = %s order by score desc "
     mycursor.execute(sql, (idJob,))
     results = mycursor.fetchall()
@@ -272,23 +282,34 @@ def selectForJob(idJob):
 
 
 def selectForCandidate(idCandidate):
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     sql = "SELECT idjob FROM job_candidate where idCandidate = %s order by score desc "
     mycursor.execute(sql, (idCandidate,))
     results = mycursor.fetchall()
-    pprint(results)
     listJob = []
+    json_data = []
     for job in results:
-        mycursor.execute("select  from post where idpost = %s", (job[0],))
-        listJob.append(mycursor.fetchone())
-    return listJob
+        mycursor.execute("select idcompany, idpost,category,salary,address,created,expired from post where idpost = %s", (job[0],))
+        row_headers = [x[0] for x in mycursor.description]
+        datajob = mycursor.fetchone()
+        pprint(row_headers)
+        json_data.append(dict(zip(row_headers, datajob)))
+        listJob.append(datajob)
+        pprint(json_data)
+    # pprint(json.dumps(json_data))
+    return json_data
 
 # ---- INIT Value-----
 def initJobVsCandidate(job):
     pprint(job)
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     mycursor.execute(
         "SELECT title, career, salary, sex, category, position, diploma, experience, address, idstudent FROM student")
+    pprint(mycursor.description)
     candidates = mycursor.fetchall()
     for candidate in candidates:
         try:
@@ -306,7 +327,8 @@ def initJobVsCandidate(job):
                 try:
                     sql = "INSERT INTO job_candidate (idjob, idcandidate, score) VALUES (%s, %s,%s) ON DUPLICATE KEY UPDATE score = VALUES(score);"
                     mycursor.execute(sql, (job[9], candidate[9], score_val))
-                    mydb.commit()
+                    # mydb.commit()
+                    conn.commit()
 
                 except BaseException as e:
                     print('Statement:', e.args)
@@ -321,7 +343,9 @@ def initJobVsCandidate(job):
 
 def initCandidateVsPost(candidate):
     pprint(candidate)
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     mycursor.execute(
         "SELECT title, idcareer, salary, sex, category, position, diploma, experience, address, idpost FROM post")
     posts = mycursor.fetchall()
@@ -340,14 +364,16 @@ def initCandidateVsPost(candidate):
             try:
                 sql = "INSERT INTO job_candidate (idjob, idcandidate, score) VALUES (%s, %s,%s) ON DUPLICATE KEY UPDATE score = VALUES(score);"
                 mycursor.execute(sql, (job[9], candidate[9], score_val))
-                mydb.commit()
-
+                # mydb.commit()
+                conn.commit()
             except:
                 print("Fail Insert!")
 
 
 def initValueByJob():
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     mycursor.execute(
         "SELECT title, idcareer, salary, sex, category, position, diploma, experience, address, idpost FROM post")
     jobs = mycursor.fetchall()
@@ -359,7 +385,9 @@ def initValueByJob():
 # initValueByJob()
 
 def initValueByCandidate():
-    mycursor = mydb.cursor()
+    # mycursor = mydb.cursor()
+    conn = mysql.connect()
+    mycursor = conn.cursor()
     mycursor.execute(
         "SELECT title, career, salary, sex, category, position, diploma, experience, address, idstudent FROM student")
     candidates = mycursor.fetchall()
