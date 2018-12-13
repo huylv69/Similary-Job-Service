@@ -292,7 +292,7 @@ def selectForCandidate(idCandidate):
     json_data = []
     for job in results:
         mycursor.execute(
-            "select idcompany, idpost,category,salary,address,created,expired,title from post where idpost = %s",
+            "select idcompany, idpost,category,salary,address,created,expired,title,idcareer from post where idpost = %s",
             (job[0],))
         row_headers = [x[0] for x in mycursor.description]
         datajob = mycursor.fetchone()
