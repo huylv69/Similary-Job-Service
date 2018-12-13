@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from pyvi import ViTokenizer, ViPosTagger
 from pprint import pprint
 import math
@@ -6,6 +8,7 @@ import json
 
 # import mysql.connector
 from database import mysql
+
 
 # conn = mysql.connect()
 
@@ -108,8 +111,6 @@ def compare_career(career1, career2):
         return 1
     else:
         return 0
-
-
 
 
 def compare_diploma(dip1, dip2):
@@ -288,16 +289,19 @@ def selectForCandidate(idCandidate):
     sql = "SELECT idjob FROM job_candidate where idCandidate = %s order by score desc "
     mycursor.execute(sql, (idCandidate,))
     results = mycursor.fetchall()
-    listJob = []
     json_data = []
     for job in results:
-        mycursor.execute("select idcompany, idpost,category,salary,address,created,expired,title from post where idpost = %s", (job[0],))
+        mycursor.execute(
+            "select idcompany, idpost,category,salary,address,created,expired,title from post where idpost = %s",
+            (job[0],))
         row_headers = [x[0] for x in mycursor.description]
         datajob = mycursor.fetchone()
-        json_data.append(dict(zip(row_headers, datajob)))
-        listJob.append(datajob)
-        pprint(json_data)
-    # pprint(json.dumps(json_data))
+        data = dict(zip(row_headers, datajob))
+        data["created"] = data["created"].isoformat()
+        data["expired"] = data["expired"].isoformat()
+        pprint(data)
+        json_data.append(data)
+    # res = json.dumps(json_data, ensure_ascii=False)
     return json_data
 
 # ---- INIT Value-----

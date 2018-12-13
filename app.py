@@ -11,6 +11,8 @@ app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'Vanhuy@123'
 app.config['MYSQL_DATABASE_DB'] = 'linktest'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_USE_UNICODE'] = 'True'
+app.config['MYSQL_CHARSET'] = 'utf-8'
 
 mysql.init_app(app)
 
