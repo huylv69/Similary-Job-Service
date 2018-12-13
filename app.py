@@ -22,13 +22,22 @@ def hello_world():
 
 
 # --- GET ---
+# Candidate for 1 job
 @app.route('/job-to-candidate/<idJob>', methods=['GET'])
 def getListCandidate(idJob):
     pprint(idJob)
     listCandidate = selectForJob(idJob)
     return jsonify(listCandidate), 200
 
+# get list job with candidate recommend
+@app.route('/listjob-to-candidate/<idCompany>', methods=['GET'])
+def getListJobCandidate(idCompany):
+    pprint(idCompany)
+    listCandidate = selectForJob(idCompany)
+    return jsonify(listCandidate), 200
 
+
+# Recommend for candidate
 @app.route('/candidate-to-job/<idCandidate>', methods=['GET'])
 def getListJob(idCandidate):
     pprint(idCandidate)

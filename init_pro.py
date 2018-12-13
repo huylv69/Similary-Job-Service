@@ -266,7 +266,7 @@ def candidateVsPost(candidate):
             print('Type:', type(e))
             print("Data parsing failed!")
 
-
+# Recommend candidate for job
 def selectForJob(idJob):
     # mycursor = mydb.cursor()
     conn = mysql.connect()
@@ -274,14 +274,18 @@ def selectForJob(idJob):
     sql = "SELECT idcandidate FROM job_candidate where idjob = %s order by score desc "
     mycursor.execute(sql, (idJob,))
     results = mycursor.fetchall()
-    pprint(results)
     listCandidate = []
     for candidate in results:
-        mycursor.execute("select name,sex,phone,address,position   from student where idstudent = %s", (candidate[0],))
-        listCandidate.append(mycursor.fetchone())
+        mycursor.execute("select idstudent,email, name, sex, address, birthday, phone, skill, experience, education, objective, photo, other, position, diploma, category, title, career, salary  from student where idstudent = %s", (candidate[0],))
+        row_headers = [x[0] for x in mycursor.description]
+        datadict = mycursor.fetchone()
+        data = dict(zip(row_headers, datadict))
+        data["birthday"] = data["birthday"].isoformat()
+        listCandidate.append(data)
     return listCandidate
 
 
+# recommend job for candidate
 def selectForCandidate(idCandidate):
     # mycursor = mydb.cursor()
     conn = mysql.connect()
